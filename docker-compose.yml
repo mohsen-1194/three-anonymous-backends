@@ -1,0 +1,43 @@
+
+services:
+  django:
+    build: ./dj
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000')"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    command: python serve.py
+
+  flask:
+    build: ./fl
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001')"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    command: python serve.py
+
+  fastapi:
+    build: ./fa
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002')"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    command: python main.py
+
+  tester:
+    build: ./tester
+    depends_on:
+      django:
+        condition: service_healthy
+      flask:
+        condition: service_healthy
+      fastapi:
+        condition: service_healthy
+    command: python tester.py
+
